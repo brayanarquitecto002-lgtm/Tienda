@@ -4,6 +4,13 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_IMGBB_API_KEY": "3cdeef6e840716d034ca88855d9d0a5d"
+    "NEXT_PUBLIC_IMGBB_API_KEY": "3cdeef6e840716d034ca88855d9d0a5d",
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCGQSprmce5YndpVA-493DP9Hzi14_mq-4",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "tiendaarquitectura.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "tiendaarquitectura",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "tiendaarquitectura.firebasestorage.app",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "667294235066",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:667294235066:web:e15fd3e1bf7335ac750583",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-JNPPCRDVCJ"
   }
 }
