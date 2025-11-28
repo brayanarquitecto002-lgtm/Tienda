@@ -1,0 +1,9 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_IMGBB_API_KEY": "0adddd5b1f61799d10be43e33ba3464f"
+  }
+}
