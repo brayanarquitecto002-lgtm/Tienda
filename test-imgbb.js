@@ -1,5 +1,5 @@
 // Prueba simple de ImgBB
-const IMGBB_API_KEY = '0adddd5b1f61799d10be43e33ba3464f';
+const IMGBB_API_KEY = '3cdeef6e840716d034ca88855d9d0a5d';
 
 console.log('🖼️ Probando API Key de ImgBB...');
 console.log('API Key:', IMGBB_API_KEY.substring(0, 10) + '...');

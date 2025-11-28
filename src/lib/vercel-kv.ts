@@ -146,9 +146,9 @@ const compressBase64Image = (base64String: string, maxWidth: number = 400, quali
   });
 };
 
-// Subir imagen de producto (comprimir base64)
+// Subir imagen de producto a ImgBB
 export const uploadProductImage = async (file: File, productId: string): Promise<string | null> => {
-  console.log('🖼️ Procesando imagen de producto...');
+  console.log('🖼️ Subiendo imagen a ImgBB...');
   console.log('📋 Parámetros:', { fileName: file.name, fileSize: file.size, productId });
 
   try {
@@ -157,14 +157,44 @@ export const uploadProductImage = async (file: File, productId: string): Promise
       throw new Error('La imagen es demasiado grande. Máximo 5MB.');
     }
 
-    console.log('🗜️ Comprimiendo imagen...');
-    const compressedBase64 = await compressBase64Image(URL.createObjectURL(file), 800, 0.85);
-    console.log(`✅ Imagen comprimida: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+    // Obtener API key de ImgBB
+    const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (!IMGBB_API_KEY) {
+      throw new Error('API key de ImgBB no configurada');
+    }
 
-    console.log('🎉 Imagen procesada exitosamente');
-    return compressedBase64;
+    console.log('📤 Enviando imagen a ImgBB...');
+
+    // Crear FormData con la imagen
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('name', `producto_${productId}_${Date.now()}`);
+
+    // Subir a ImgBB
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`ImgBB error: ${errorData.error?.message || 'Error desconocido'}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      const imageUrl = data.data.url;
+      console.log('✅ Imagen subida exitosamente a ImgBB:', imageUrl);
+      console.log('📊 Tamaño:', data.data.size, 'bytes');
+      console.log('🖼️ Dimensiones:', data.data.width, 'x', data.data.height);
+
+      return imageUrl;
+    } else {
+      throw new Error(`ImgBB error: ${data.error?.message || 'Error desconocido'}`);
+    }
   } catch (error) {
-    console.error('💥 Error procesando imagen:', error);
+    console.error('💥 Error subiendo imagen a ImgBB:', error);
     return null;
   }
 };
@@ -247,13 +277,8 @@ export const getProducts = async (): Promise<Product[]> => {
 // Agregar un nuevo producto
 export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string | null> => {
   try {
-    // Comprimir imagen si es base64
+    // La imagen ya viene como URL de ImgBB, no necesitamos procesarla
     const processedProduct = { ...product };
-    if (product.image && product.image.startsWith('data:image/')) {
-      console.log('🗜️ Comprimiendo imagen base64...');
-      processedProduct.image = await compressBase64Image(product.image, 400, 0.7);
-      console.log('✅ Imagen comprimida');
-    }
 
     // Crear producto con ID único
     const newProduct: Product = {

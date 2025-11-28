@@ -62,11 +62,6 @@ export default function AdminCatalogo() {
         reader.readAsDataURL(file);
       });
 
-      console.log('✅ Imagen convertida a base64 exitosamente');
-      setFormData(prev => ({ ...prev, image: base64String }));
-      alert('Imagen procesada exitosamente');
-
-      /* CUANDO IMGBB ESTÉ CONFIGURADO, DESCOMENTAR:
       console.log('📤 Llamando a uploadProductImage...');
       const productId = Date.now().toString();
       const imageUrl = await uploadProductImage(file, productId);
@@ -79,7 +74,6 @@ export default function AdminCatalogo() {
         console.error('❌ La función uploadProductImage retornó null');
         alert('Error: No se pudo obtener la URL de la imagen subida');
       }
-      */
     } catch (error) {
       console.error('💥 Error detallado al procesar imagen:', error);
       console.error('🔍 Tipo de error:', typeof error);
@@ -264,7 +258,7 @@ export default function AdminCatalogo() {
                       </div>
                     )}
                     <small className="form-text text-muted">
-                      Selecciona una imagen PNG, JPG o GIF (máximo 5MB). Se convertirá a base64 temporalmente. Espera a que aparezca la vista previa antes de enviar el formulario.
+                      Selecciona una imagen PNG, JPG o GIF (máximo 5MB). Se subirá automáticamente a ImgBB. Espera el mensaje de confirmación antes de enviar el formulario.
                     </small>
                   </div>
                   <div className="mb-3">
