@@ -18,8 +18,19 @@ export default function Tienda() {
     try {
       setLoading(true);
       setError(null);
-      const productsData = await getProducts();
-      setProducts(productsData);
+
+      // TEMPORAL: Leer desde localStorage mientras Firebase se configura
+      const saved = localStorage.getItem('products');
+      if (saved) {
+        const productsData = JSON.parse(saved);
+        console.log('✅ Productos cargados desde localStorage:', productsData.length);
+        setProducts(productsData);
+      } else {
+        console.log('📝 No hay productos guardados, mostrando productos de ejemplo...');
+        // Si no hay productos guardados, intentar desde Firebase
+        const productsData = await getProducts();
+        setProducts(productsData);
+      }
     } catch (error) {
       console.error('Error loading products:', error);
       setError('Error al cargar los productos. Intenta recargar la página.');
