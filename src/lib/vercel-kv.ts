@@ -37,22 +37,53 @@ const UPSTASH_TOKEN = process.env.KV_REST_API_TOKEN || 'AX2sAAIncDIxYTc5MTAzZDZk
 
 // Función para hacer requests a Upstash
 async function upstashRequest(command: string, args: any[] = []): Promise<any> {
-  const response = await fetch(`${UPSTASH_URL}/${command}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(args),
-  });
+  console.log('🔗 Upstash Request:', { command, args, url: UPSTASH_URL });
 
-  if (!response.ok) {
-    throw new Error(`Upstash error: ${response.status} ${response.statusText}`);
+  try {
+    const response = await fetch(`${UPSTASH_URL}/${command}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(args),
+    });
+
+    console.log('📡 Upstash Response Status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Upstash Error Response:', errorText);
+      throw new Error(`Upstash error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Upstash Response Data:', data);
+    return data.result;
+  } catch (error) {
+    console.error('💥 Upstash Request Failed:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.result;
 }
+
+// Función para probar la conexión a Upstash
+export const testUpstashConnection = async (): Promise<boolean> => {
+  try {
+    console.log('🧪 Probando conexión a Upstash Redis...');
+    console.log('🔑 Variables de entorno:', {
+      UPSTASH_URL: UPSTASH_URL ? 'Configurada' : 'Faltante',
+      UPSTASH_TOKEN: UPSTASH_TOKEN ? 'Configurada' : 'Faltante',
+    });
+
+    // Intentar hacer un ping
+    const result = await upstashRequest('PING');
+    console.log('✅ Conexión a Upstash exitosa:', result);
+    return true;
+  } catch (error) {
+    console.error('❌ Error conectando a Upstash:', error);
+    return false;
+  }
+};
 
 // Función para comprimir imagen base64
 const compressBase64Image = (base64String: string, maxWidth: number = 400, quality: number = 0.7): Promise<string> => {

@@ -1,2 +1,2 @@
 // Re-exportar desde vercel-kv para mantener compatibilidad
-export { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, type Product } from './vercel-kv';
+export { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, testUpstashConnection, type Product } from './vercel-kv';
