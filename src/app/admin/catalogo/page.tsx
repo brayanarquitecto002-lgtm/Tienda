@@ -25,8 +25,19 @@ export default function AdminCatalogo() {
 
   const loadProducts = async () => {
     try {
-      const productsData = await getProducts();
-      setProducts(productsData);
+      console.log('🔍 Cargando productos en admin...');
+
+      // TEMPORAL: Leer desde localStorage mientras Firebase se configura
+      const saved = localStorage.getItem('products');
+      if (saved) {
+        const productsData = JSON.parse(saved);
+        console.log('✅ Productos cargados desde localStorage en admin:', productsData.length);
+        setProducts(productsData);
+      } else {
+        console.log('📝 No hay productos en localStorage, intentando Firebase...');
+        const productsData = await getProducts();
+        setProducts(productsData);
+      }
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
@@ -100,10 +111,17 @@ export default function AdminCatalogo() {
         }
       } else {
         // Agregando nuevo producto
+        console.log('📤 Enviando producto a guardar:', productData);
         const productId = await addProduct(productData);
+        console.log('📋 ID del producto guardado:', productId);
+
         if (productId) {
           success = true;
           alert('Producto agregado exitosamente');
+
+          // Verificar que se guardó en localStorage
+          const savedProducts = localStorage.getItem('products');
+          console.log('💾 Productos en localStorage después de guardar:', savedProducts);
         }
       }
 
