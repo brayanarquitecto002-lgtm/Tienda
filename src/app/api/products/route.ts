@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/db';
+import { getSupabaseClient } from '@/lib/db';
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient();
     const { data: products, error } = await supabase
       .from('products')
       .select(`
@@ -36,6 +37,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const body = await request.json();
     const { name, description, price, image, details, features } = body;
 
@@ -84,6 +86,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const body = await request.json();
     const { id, name, description, price, image, details, features } = body;
 
@@ -145,6 +148,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
 
