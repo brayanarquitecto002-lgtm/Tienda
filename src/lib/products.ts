@@ -15,8 +15,80 @@ export interface Product {
 
 const COLLECTION_NAME = 'products';
 
+// Función para guardar productos en cookies (compartido entre páginas)
+const saveProductsToCookie = (products: Product[]) => {
+  try {
+    const productsJson = JSON.stringify(products);
+    // Comprimir con base64 para reducir tamaño
+    const compressed = btoa(productsJson);
+    document.cookie = `tienda_products=${compressed}; path=/; max-age=86400`; // 24 horas
+    console.log('✅ Productos guardados en cookie');
+  } catch (error) {
+    console.error('❌ Error guardando en cookie:', error);
+  }
+};
+
+// Función para cargar productos desde cookies
+const loadProductsFromCookie = (): Product[] | null => {
+  try {
+    const cookies = document.cookie.split(';');
+    const productCookie = cookies.find(cookie => cookie.trim().startsWith('tienda_products='));
+
+    if (productCookie) {
+      const compressed = productCookie.split('=')[1];
+      const productsJson = atob(compressed);
+      const products = JSON.parse(productsJson);
+      console.log('✅ Productos cargados desde cookie:', products.length);
+      return products;
+    }
+  } catch (error) {
+    console.error('❌ Error cargando desde cookie:', error);
+  }
+  return null;
+};
+
+// Función para comprimir imagen base64
+const compressBase64Image = (base64String: string, maxWidth: number = 400, quality: number = 0.7): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+
+      // Calcular nuevas dimensiones
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Dibujar y comprimir
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convertir a base64 comprimido
+      const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedBase64);
+    };
+    img.src = base64String;
+  });
+};
+
 // Obtener todos los productos
 export const getProducts = async (): Promise<Product[]> => {
+  // TEMPORAL: Leer desde cookies mientras Firebase se configura
+  const cookieProducts = loadProductsFromCookie();
+  if (cookieProducts && cookieProducts.length > 0) {
+    return cookieProducts;
+  }
+
+  // Si no hay productos en cookies, devolver productos de ejemplo
+  console.log('📝 No hay productos en cookies, mostrando productos de ejemplo...');
+  return getExampleProducts();
+
+  /* CUANDO FIREBASE ESTÉ LISTO EN VERCEL, DESCOMENTAR:
   try {
     const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -40,6 +112,7 @@ export const getProducts = async (): Promise<Product[]> => {
     // Fallback: devolver productos de ejemplo si Firebase falla
     return getExampleProducts();
   }
+  */
 };
 
 // Productos de ejemplo con URLs válidas
@@ -93,12 +166,37 @@ const getExampleProducts = (): Product[] => [
 // Agregar un nuevo producto
 export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string | null> => {
   try {
+    // Comprimir imagen si es base64
+    let processedProduct = { ...product };
+    if (product.image && product.image.startsWith('data:image/')) {
+      console.log('🗜️ Comprimiendo imagen base64...');
+      processedProduct.image = await compressBase64Image(product.image, 400, 0.7);
+      console.log('✅ Imagen comprimida');
+    }
+
+    // TEMPORAL: Usar cookies mientras Firebase se configura
+    const newProduct: Product = {
+      ...processedProduct,
+      id: Date.now().toString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const existing = loadProductsFromCookie() || [];
+    existing.push(newProduct);
+    saveProductsToCookie(existing);
+
+    console.log('✅ Producto agregado:', newProduct.name);
+    return newProduct.id || null;
+
+    /* CUANDO FIREBASE ESTÉ LISTO, DESCOMENTAR:
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...product,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     return docRef.id;
+    */
   } catch (error) {
     console.error('Error adding product:', error);
     return null;
@@ -108,12 +206,27 @@ export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'up
 // Actualizar un producto
 export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
   try {
+    // TEMPORAL: Usar cookies mientras Firebase se configura
+    const existing = loadProductsFromCookie();
+    if (existing) {
+      const index = existing.findIndex(p => p.id === id);
+      if (index !== -1) {
+        existing[index] = { ...existing[index], ...product, updatedAt: new Date() };
+        saveProductsToCookie(existing);
+        console.log('✅ Producto actualizado:', id);
+        return true;
+      }
+    }
+    return false;
+
+    /* CUANDO FIREBASE ESTÉ LISTO, DESCOMENTAR:
     const docRef = doc(db, COLLECTION_NAME, id);
     await updateDoc(docRef, {
       ...product,
       updatedAt: new Date(),
     });
     return true;
+    */
   } catch (error) {
     console.error('Error updating product:', error);
     return false;
@@ -123,8 +236,20 @@ export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'c
 // Eliminar un producto
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
+    // TEMPORAL: Usar cookies mientras Firebase se configura
+    const existing = loadProductsFromCookie();
+    if (existing) {
+      const filteredProducts = existing.filter((p: Product) => p.id !== id);
+      saveProductsToCookie(filteredProducts);
+      console.log('✅ Producto eliminado:', id);
+      return true;
+    }
+    return false;
+
+    /* CUANDO FIREBASE ESTÉ LISTO, DESCOMENTAR:
     await deleteDoc(doc(db, COLLECTION_NAME, id));
     return true;
+    */
   } catch (error) {
     console.error('Error deleting product:', error);
     return false;
