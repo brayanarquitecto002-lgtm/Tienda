@@ -15,12 +15,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const imageUrl = product.image || `https://picsum.photos/400/300?random=999`;
 
   useEffect(() => {
-    // Timeout para evitar spinner infinito (5 segundos máximo)
+    // Timeout más largo para imágenes base64 (10 segundos máximo)
     const timeout = setTimeout(() => {
       if (imageState === 'loading') {
         setImageState('error');
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timeout);
   }, [imageState]);
