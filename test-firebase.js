@@ -4,14 +4,15 @@
 const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, addDoc, getDocs } = require('firebase/firestore');
 
-// Configuración de Firebase (reemplaza con tus valores)
+// Configuración de Firebase REAL (no uses variables de entorno en scripts de Node)
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo_key",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "demo.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "demo-project",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyCGQSprmce5YndpVA-493DP9Hzi14_mq-4",
+  authDomain: "tiendaarquitectura.firebaseapp.com",
+  projectId: "tiendaarquitectura",
+  storageBucket: "tiendaarquitectura.firebasestorage.app",
+  messagingSenderId: "667294235066",
+  appId: "1:667294235066:web:e15fd3e1bf7335ac750583",
+  measurementId: "G-JNPPCRDVCJ"
 };
 
 // Inicializar Firebase
