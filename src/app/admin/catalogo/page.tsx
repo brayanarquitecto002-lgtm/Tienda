@@ -39,6 +39,9 @@ export default function AdminCatalogo() {
   };
 
   const handleImageUpload = async (file: File) => {
+    console.log('🚀 Iniciando proceso de subida de imagen...');
+    console.log('📁 Archivo:', file.name, 'Tamaño:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+
     // Validar tamaño antes de subir (máximo 5MB para productos)
     if (file.size > 5 * 1024 * 1024) {
       alert('La imagen es demasiado grande. Máximo 5MB.');
@@ -47,19 +50,22 @@ export default function AdminCatalogo() {
 
     setUploading(true);
     try {
-      console.log('Iniciando subida de imagen:', file.name, file.size, 'bytes');
+      console.log('📤 Llamando a uploadProductImage...');
       const productId = Date.now().toString();
       const imageUrl = await uploadProductImage(file, productId);
+
       if (imageUrl) {
-        console.log('Imagen subida exitosamente:', imageUrl);
+        console.log('✅ Imagen subida exitosamente:', imageUrl);
         setFormData(prev => ({ ...prev, image: imageUrl }));
         alert('Imagen subida exitosamente');
       } else {
-        console.error('La función uploadProductImage retornó null');
+        console.error('❌ La función uploadProductImage retornó null');
         alert('Error: No se pudo obtener la URL de la imagen subida');
       }
     } catch (error) {
-      console.error('Error detallado al subir imagen:', error);
+      console.error('💥 Error detallado al subir imagen:', error);
+      console.error('🔍 Tipo de error:', typeof error);
+      console.error('📋 Error completo:', error);
       alert(`Error al subir la imagen: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setUploading(false);

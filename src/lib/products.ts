@@ -157,47 +157,57 @@ const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8
 
 // Subir imagen a ImgBB (servicio gratuito)
 export const uploadProductImage = async (file: File, productId: string): Promise<string | null> => {
+  console.log('🖼️ Iniciando subida de imagen a ImgBB...');
+  console.log('📋 Parámetros:', { fileName: file.name, fileSize: file.size, productId });
+
   try {
     // Validar tamaño del archivo (ImgBB permite hasta 32MB, pero limitamos a 5MB)
     if (file.size > 5 * 1024 * 1024) {
       throw new Error('La imagen es demasiado grande. Máximo 5MB.');
     }
 
-    console.log('Comprimiendo imagen...');
+    console.log('🗜️ Comprimiendo imagen...');
     const compressedFile = await compressImage(file, 800, 0.85); // Mejor calidad para ImgBB
-    console.log(`Imagen comprimida: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+    console.log(`✅ Imagen comprimida: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
 
     // Subir a ImgBB
-    console.log('Subiendo a ImgBB...');
+    console.log('📤 Enviando a ImgBB...');
     const formData = new FormData();
     formData.append('image', compressedFile);
 
     // Tu API Key de ImgBB - reemplaza con la tuya
     const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || 'TU_API_KEY_AQUI';
+    console.log('🔑 API Key presente:', IMGBB_API_KEY ? 'Sí' : 'No');
 
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
       method: 'POST',
       body: formData,
     });
 
+    console.log('📡 Respuesta de ImgBB:', response.status, response.statusText);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Error en respuesta de ImgBB:', errorText);
       throw new Error(`Error en ImgBB: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('📋 Datos de respuesta:', data);
 
     if (data.success) {
       const imageUrl = data.data.url;
-      console.log('Imagen subida exitosamente a ImgBB:', imageUrl);
+      console.log('🎉 Imagen subida exitosamente a ImgBB:', imageUrl);
       return imageUrl;
     } else {
+      console.error('❌ Respuesta de error de ImgBB:', data);
       throw new Error('Error en la respuesta de ImgBB');
     }
   } catch (error) {
-    console.error('Error detallado al subir imagen:', error);
+    console.error('💥 Error detallado al subir imagen:', error);
     if (error instanceof Error) {
-      console.error('Mensaje de error:', error.message);
-      console.error('Stack:', error.stack);
+      console.error('📝 Mensaje de error:', error.message);
+      console.error('🔍 Stack trace:', error.stack);
     }
     return null;
   }
