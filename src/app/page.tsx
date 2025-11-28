@@ -20,8 +20,8 @@ export default function Home() {
       aboutUs: 'Somos un equipo de arquitectos apasionados por crear espacios funcionales, estéticos y sostenibles. Con años de experiencia, hemos diseñado proyectos residenciales, comerciales e institucionales.',
       mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
       vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
-      logo: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=80&fit=crop&crop=center',
-      heroImage: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center',
+      logo: 'https://picsum.photos/200/80?random=logo',
+      heroImage: 'https://picsum.photos/1200/600?random=10',
       socialLinks: {
         facebook: '',
         instagram: '',
@@ -80,7 +80,7 @@ export default function Home() {
             </div>
             <div className="col-md-6">
               <img
-                src={siteContent.heroImage || 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center'}
+                src={siteContent.heroImage || 'https://picsum.photos/1200/600?random=hero'}
                 alt="Arquitectura"
                 className="img-fluid rounded"
               />
