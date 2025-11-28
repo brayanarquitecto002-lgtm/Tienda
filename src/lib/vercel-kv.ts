@@ -35,18 +35,16 @@ const SITE_CONTENT_KEY = 'tienda_site_content';
 const UPSTASH_URL = process.env.KV_REST_API_URL || 'https://fast-bullfrog-32172.upstash.io';
 const UPSTASH_TOKEN = process.env.KV_REST_API_TOKEN || 'AX2sAAIncDIxYTc5MTAzZDZkNTg0ZDMyOTNiOTljZTI3MTNkNjk2MXAyMzIxNzI';
 
-// Función para hacer requests a Upstash
-async function upstashRequest(command: string, args: any[] = []): Promise<any> {
-  console.log('🔗 Upstash Request:', { command, args, url: UPSTASH_URL });
+// Función para hacer requests GET a Upstash
+async function upstashGet(key: string): Promise<any> {
+  console.log('🔗 Upstash GET:', { key, url: UPSTASH_URL });
 
   try {
-    const response = await fetch(`${UPSTASH_URL}/${command}`, {
-      method: 'POST',
+    const response = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(args),
     });
 
     console.log('📡 Upstash Response Status:', response.status, response.statusText);
@@ -61,7 +59,38 @@ async function upstashRequest(command: string, args: any[] = []): Promise<any> {
     console.log('✅ Upstash Response Data:', data);
     return data.result;
   } catch (error) {
-    console.error('💥 Upstash Request Failed:', error);
+    console.error('💥 Upstash GET Failed:', error);
+    throw error;
+  }
+}
+
+// Función para hacer requests SET a Upstash
+async function upstashSet(key: string, value: string): Promise<any> {
+  console.log('🔗 Upstash SET:', { key, value: value.substring(0, 100) + '...', url: UPSTASH_URL });
+
+  try {
+    const response = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: value,
+    });
+
+    console.log('📡 Upstash Response Status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Upstash Error Response:', errorText);
+      throw new Error(`Upstash error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Upstash Response Data:', data);
+    return data.result;
+  } catch (error) {
+    console.error('💥 Upstash SET Failed:', error);
     throw error;
   }
 }
@@ -75,10 +104,13 @@ export const testUpstashConnection = async (): Promise<boolean> => {
       UPSTASH_TOKEN: UPSTASH_TOKEN ? 'Configurada' : 'Faltante',
     });
 
-    // Intentar hacer un ping
-    const result = await upstashRequest('PING');
+    // Intentar hacer un ping usando SET y GET de una clave de prueba
+    const testKey = 'test_connection';
+    const testValue = 'ok';
+    await upstashSet(testKey, testValue);
+    const result = await upstashGet(testKey);
     console.log('✅ Conexión a Upstash exitosa:', result);
-    return true;
+    return result === testValue;
   } catch (error) {
     console.error('❌ Error conectando a Upstash:', error);
     return false;
@@ -189,7 +221,8 @@ const getExampleProducts = (): Product[] => [
 export const getProducts = async (): Promise<Product[]> => {
   try {
     console.log('🔍 Intentando cargar productos desde Upstash Redis...');
-    const products = await upstashRequest('GET', [PRODUCTS_KEY]);
+    const productsJson = await upstashGet(PRODUCTS_KEY);
+    const products = productsJson ? JSON.parse(productsJson) : [];
 
     if (products && products.length > 0) {
       console.log('✅ Productos cargados desde Upstash:', products.length);
@@ -225,11 +258,12 @@ export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'up
     };
 
     // Obtener productos existentes y agregar el nuevo
-    const existingProducts = await upstashRequest('GET', [PRODUCTS_KEY]) || [];
+    const existingProductsJson = await upstashGet(PRODUCTS_KEY);
+    const existingProducts = existingProductsJson ? JSON.parse(existingProductsJson) : [];
     existingProducts.push(newProduct);
 
     // Guardar en Upstash
-    await upstashRequest('SET', [PRODUCTS_KEY, JSON.stringify(existingProducts)]);
+    await upstashSet(PRODUCTS_KEY, JSON.stringify(existingProducts));
 
     console.log('✅ Producto agregado a Upstash Redis:', newProduct.name);
     return newProduct.id || null;
@@ -242,7 +276,8 @@ export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'up
 // Actualizar un producto
 export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
   try {
-    const existingProducts = await upstashRequest('GET', [PRODUCTS_KEY]) || [];
+    const existingProductsJson = await upstashGet(PRODUCTS_KEY);
+    const existingProducts = existingProductsJson ? JSON.parse(existingProductsJson) : [];
     const index = existingProducts.findIndex((p: Product) => p.id === id);
 
     if (index !== -1) {
@@ -251,7 +286,7 @@ export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'c
         ...product,
         updatedAt: new Date()
       };
-      await upstashRequest('SET', [PRODUCTS_KEY, JSON.stringify(existingProducts)]);
+      await upstashSet(PRODUCTS_KEY, JSON.stringify(existingProducts));
       console.log('✅ Producto actualizado en Upstash Redis:', id);
       return true;
     }
@@ -265,9 +300,10 @@ export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'c
 // Eliminar un producto
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
-    const existingProducts = await upstashRequest('GET', [PRODUCTS_KEY]) || [];
+    const existingProductsJson = await upstashGet(PRODUCTS_KEY);
+    const existingProducts = existingProductsJson ? JSON.parse(existingProductsJson) : [];
     const filteredProducts = existingProducts.filter((p: Product) => p.id !== id);
-    await upstashRequest('SET', [PRODUCTS_KEY, JSON.stringify(filteredProducts)]);
+    await upstashSet(PRODUCTS_KEY, JSON.stringify(filteredProducts));
     console.log('✅ Producto eliminado de Upstash Redis:', id);
     return true;
   } catch (error) {
@@ -279,14 +315,15 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
 // Obtener contenido del sitio
 export const getSiteContent = async (): Promise<SiteContent> => {
   try {
-    const content = await upstashRequest('GET', [SITE_CONTENT_KEY]);
+    const contentJson = await upstashGet(SITE_CONTENT_KEY);
+    const content = contentJson ? JSON.parse(contentJson) : null;
     return content || {
       heroTitle: 'Arquitectura Pro',
       heroDescription: 'Diseños arquitectónicos innovadores y sostenibles para transformar tus espacios.',
       aboutUs: 'Somos un equipo de arquitectos apasionados por crear espacios funcionales, estéticos y sostenibles. Con años de experiencia, hemos diseñado proyectos residenciales, comerciales e institucionales.',
       mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
       vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
-      logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMDA3YmZmIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxvZ288L3RleHQ+Cjwvc3ZnPgo=',
+      logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3cy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMDA3YmZmIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxvZ288L3RleHQ+Cjwvc3ZnPgo=',
       heroImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxMjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiM2Yzc1N2QiLz48dGV4dCB4PSI2MDAiIHk9IjMwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjM2IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SGVybzogQXJxdWl0ZWN0dXJhIFBybzwvdGV4dD48L3N2Zz4K',
       socialLinks: {
         facebook: '',
@@ -322,7 +359,7 @@ export const getSiteContent = async (): Promise<SiteContent> => {
 // Guardar contenido del sitio
 export const saveSiteContent = async (content: SiteContent): Promise<boolean> => {
   try {
-    await upstashRequest('SET', [SITE_CONTENT_KEY, JSON.stringify(content)]);
+    await upstashSet(SITE_CONTENT_KEY, JSON.stringify(content));
     console.log('✅ Contenido del sitio guardado en Upstash Redis');
     return true;
   } catch (error) {
