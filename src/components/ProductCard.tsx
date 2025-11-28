@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product } from '@/lib/products';
 
 interface ProductCardProps {
@@ -9,8 +9,18 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
+
+  useEffect(() => {
+    // Timeout para evitar spinner infinito (5 segundos máximo)
+    const timeout = setTimeout(() => {
+      if (imageState === 'loading') {
+        setImageState('error');
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [imageState]);
 
   return (
     <div className="card h-100 shadow-sm">
@@ -18,12 +28,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
         className="card-img-top d-flex align-items-center justify-content-center bg-light"
         style={{ height: '200px', position: 'relative' }}
       >
-        {!imageLoaded && !imageError && (
+        {imageState === 'loading' && (
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Cargando...</span>
           </div>
         )}
-        {imageError ? (
+        {imageState === 'error' ? (
           <div className="text-center text-muted">
             <i className="fas fa-image fa-2x mb-2"></i>
             <br />
@@ -32,7 +42,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         ) : (
           <img
             src={product.image}
-            className={`card-img-top ${imageLoaded ? '' : 'd-none'}`}
+            className={`card-img-top ${imageState === 'loaded' ? '' : 'd-none'}`}
             alt={product.name}
             style={{
               height: '200px',
@@ -40,11 +50,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               width: '100%'
             }}
             loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageError(true);
-              setImageLoaded(true);
-            }}
+            onLoad={() => setImageState('loaded')}
+            onError={() => setImageState('error')}
           />
         )}
       </div>
