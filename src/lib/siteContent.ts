@@ -37,8 +37,8 @@ export const getSiteContent = async (): Promise<SiteContent | null> => {
         aboutUs: 'Somos un equipo de arquitectos apasionados por crear espacios funcionales, estéticos y sostenibles. Con años de experiencia, hemos diseñado proyectos residenciales, comerciales e institucionales.',
         mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
         vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
-        logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=80&fit=crop',
-        heroImage: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=600&fit=crop',
+        logo: 'https://picsum.photos/200/80?random=1',
+        heroImage: 'https://picsum.photos/1200/600?random=2',
         socialLinks: {
           facebook: '',
           instagram: '',
