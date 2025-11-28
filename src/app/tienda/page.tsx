@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { getProducts, Product } from '@/lib/products';
@@ -76,6 +77,11 @@ export default function Tienda() {
   return (
     <Layout>
       <div className="container py-5">
+        <div className="mb-4">
+          <Link href="/" className="btn btn-outline-primary">
+            ← Volver al Inicio
+          </Link>
+        </div>
         <h1 className="text-center mb-4">Catálogo de Diseños Arquitectónicos</h1>
         <p className="text-center lead mb-5">
           Explora nuestros diseños innovadores y encuentra la inspiración para tu próximo proyecto.

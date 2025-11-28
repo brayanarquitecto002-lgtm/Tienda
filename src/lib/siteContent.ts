@@ -1,5 +1,69 @@
-// Re-exportar desde vercel-kv para mantener compatibilidad
-export { getSiteContent, saveSiteContent, type SiteContent } from './vercel-kv';
+// Tipos para el contenido del sitio
+export interface SiteContent {
+  heroTitle: string;
+  heroDescription: string;
+  aboutUs: string;
+  mission: string;
+  vision: string;
+  logo: string;
+  heroImage: string;
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    gmail: string;
+    youtube: string;
+    tiktok: string;
+  };
+  whatsapp: string;
+}
+
+// Función para obtener contenido del sitio desde la API
+export const getSiteContent = async (): Promise<SiteContent | null> => {
+  try {
+    const response = await fetch('/api/site-content');
+    const data = await response.json();
+
+    if (data.success) {
+      return data.content;
+    } else {
+      console.error('Error fetching site content:', data.message);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching site content:', error);
+    return null;
+  }
+};
+
+// Función para guardar contenido del sitio via API
+export const saveSiteContent = async (content: SiteContent): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/site-content', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(content),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Disparar evento para actualizar componentes
+      if (typeof window !== 'undefined') {
+        console.log('siteContent.ts: Disparando evento siteContentUpdated con logo:', content.logo);
+        window.dispatchEvent(new CustomEvent('siteContentUpdated', { detail: content }));
+      }
+      return true;
+    } else {
+      console.error('Error saving site content:', data.message);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error saving site content:', error);
+    return false;
+  }
+};
 
 // Función para comprimir imagen
 const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<File> => {
@@ -40,44 +104,28 @@ const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8
   });
 };
 
-// Subir logo a ImgBB
+// Subir logo (versión simplificada para desarrollo)
 export const uploadLogo = async (file: File): Promise<string | null> => {
   try {
-    // Validar tamaño del archivo (máximo 1MB para logos)
-    if (file.size > 1 * 1024 * 1024) {
-      throw new Error('El logo es demasiado grande. Máximo 1MB.');
+    // Validar tamaño del archivo (máximo 2MB para logos)
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error('El logo es demasiado grande. Máximo 2MB.');
     }
 
-    console.log('Comprimiendo logo...');
-    const compressedFile = await compressImage(file, 300, 0.9); // Logos más pequeños
-    console.log(`Logo comprimido: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+    console.log('Procesando logo...');
 
-    // Subir a ImgBB
-    console.log('Subiendo logo a ImgBB...');
-    const formData = new FormData();
-    formData.append('image', compressedFile);
-
-    // Tu API Key de ImgBB - reemplaza con la tuya
-    const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || 'TU_API_KEY_AQUI';
-
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData,
+    // Para desarrollo, convertimos a base64 y retornamos como data URL
+    // En producción, reemplaza con un servicio de hosting de imágenes real
+    const base64String = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
 
-    if (!response.ok) {
-      throw new Error(`Error en ImgBB: ${response.status} ${response.statusText}`);
-    }
+    console.log('Logo procesado exitosamente (base64)');
+    return base64String;
 
-    const data = await response.json();
-
-    if (data.success) {
-      const imageUrl = data.data.url;
-      console.log('Logo subido exitosamente a ImgBB:', imageUrl);
-      return imageUrl;
-    } else {
-      throw new Error('Error en la respuesta de ImgBB');
-    }
   } catch (error) {
     console.error('Error procesando logo:', error);
     return null;

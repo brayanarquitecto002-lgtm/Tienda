@@ -9,19 +9,14 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseapp.com https://*.googleapis.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.upstash.io https://*.firebaseapp.com https://*.googleapis.com https://api.imgbb.com wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.imgbb.com; frame-src 'self';"
         }
       ]
     }
   ],
   "env": {
     "NEXT_PUBLIC_IMGBB_API_KEY": "3cdeef6e840716d034ca88855d9d0a5d",
-    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCGQSprmce5YndpVA-493DP9Hzi14_mq-4",
-    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "tiendaarquitectura.firebaseapp.com",
-    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "tiendaarquitectura",
-    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "tiendaarquitectura.firebasestorage.app",
-    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "667294235066",
-    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:667294235066:web:e15fd3e1bf7335ac750583",
-    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-JNPPCRDVCJ"
+    "NEXT_PUBLIC_SUPABASE_URL": "https://mycpsbwinlooxjdjqmgb.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15Y3BzYndpbmxvb3hqZGpxbWdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNTAyNjYsImV4cCI6MjA3OTkyNjI2Nn0._xPinv0g68NWWiqHZEildVKo0_RqSgfVFFE7q7vZFGY"
   }
 }

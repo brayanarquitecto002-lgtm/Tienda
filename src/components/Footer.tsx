@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getSiteContent } from '@/lib/siteContent';
 
 interface SocialLinks {
   facebook: string;
@@ -28,21 +29,28 @@ const Footer = () => {
   });
 
   useEffect(() => {
-    // Cargar datos iniciales
-    const saved = localStorage.getItem('siteContent');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setSiteContent({
-        socialLinks: parsed.socialLinks || {
-          facebook: '',
-          instagram: '',
-          gmail: '',
-          youtube: '',
-          tiktok: '',
-        },
-        whatsapp: parsed.whatsapp || '',
-      });
-    }
+    // Cargar datos iniciales desde la API
+    const loadSiteContent = async () => {
+      try {
+        const content = await getSiteContent();
+        if (content) {
+          setSiteContent({
+            socialLinks: content.socialLinks || {
+              facebook: '',
+              instagram: '',
+              gmail: '',
+              youtube: '',
+              tiktok: '',
+            },
+            whatsapp: content.whatsapp || '',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading site content in Footer:', error);
+      }
+    };
+
+    loadSiteContent();
 
     // Escuchar cambios en el contenido del sitio
     const handleContentUpdate = (event: CustomEvent) => {

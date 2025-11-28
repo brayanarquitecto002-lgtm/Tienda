@@ -2,52 +2,42 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { getSiteContent, SiteContent } from '@/lib/vercel-kv';
+import { getSiteContent, SiteContent } from '@/lib/siteContent';
 
 
 export default function Home() {
-  const [siteContent, setSiteContent] = useState<SiteContent>(() => {
-    // Intentar cargar desde localStorage primero para evitar delay
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('siteContent');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    return {
-      heroTitle: 'Arquitectura Pro',
-      heroDescription: 'Diseños arquitectónicos innovadores y sostenibles para transformar tus espacios.',
-      aboutUs: 'Somos un equipo de arquitectos apasionados por crear espacios funcionales, estéticos y sostenibles. Con años de experiencia, hemos diseñado proyectos residenciales, comerciales e institucionales.',
-      mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
-      vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
-      logo: 'https://picsum.photos/200/80?random=logo',
-      heroImage: 'https://picsum.photos/1200/600?random=10',
-      socialLinks: {
-        facebook: '',
-        instagram: '',
-        gmail: '',
-        youtube: '',
-        tiktok: '',
-      },
-      whatsapp: '',
-    };
+  const [siteContent, setSiteContent] = useState<SiteContent>({
+    heroTitle: 'Arquitectura Pro',
+    heroDescription: 'Diseños arquitectónicos innovadores y sostenibles para transformar tus espacios.',
+    aboutUs: 'Somos un equipo de arquitectos apasionados por crear espacios funcionales, estéticos y sostenibles. Con años de experiencia, hemos diseñado proyectos residenciales, comerciales e institucionales.',
+    mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
+    vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
+    logo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=80&fit=crop&crop=center',
+    heroImage: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1200&h=600&fit=crop&crop=center',
+    socialLinks: {
+      facebook: 'https://facebook.com/arquitecturapro',
+      instagram: 'https://instagram.com/arquitecturapro',
+      gmail: 'mailto:info@arquitecturapro.com',
+      youtube: 'https://youtube.com/@arquitecturapro',
+      tiktok: 'https://tiktok.com/@arquitecturapro',
+    },
+    whatsapp: '+571234567890',
   });
 
   useEffect(() => {
-    // Cargar desde Firebase y actualizar si es diferente
-    const loadFromFirebase = async () => {
+    // Cargar contenido del sitio desde la API
+    const loadSiteContent = async () => {
       try {
         const content = await getSiteContent();
         if (content) {
           setSiteContent(content);
-          localStorage.setItem('siteContent', JSON.stringify(content));
         }
       } catch (error) {
-        console.error('Error loading site content from Firebase:', error);
+        console.error('Error loading site content:', error);
       }
     };
 
-    loadFromFirebase();
+    loadSiteContent();
   }, []);
 
   useEffect(() => {

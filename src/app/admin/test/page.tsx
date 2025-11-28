@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { testUpstashConnection, getProducts, addProduct } from '@/lib/products';
+import { getProducts, addProduct } from '@/lib/products';
 
 export default function AdminTest() {
   const [connectionStatus, setConnectionStatus] = useState<string>('No probado');
@@ -12,10 +13,17 @@ export default function AdminTest() {
   const handleTestConnection = async () => {
     setLoading(true);
     try {
-      const isConnected = await testUpstashConnection();
-      setConnectionStatus(isConnected ? '✅ Conectado correctamente' : '❌ Error de conexión');
+      // Test Supabase connection by trying to fetch site content
+      const response = await fetch('/api/site-content');
+      const data = await response.json();
+
+      if (data.success) {
+        setConnectionStatus('✅ Conectado correctamente a Supabase (PostgreSQL)');
+      } else {
+        setConnectionStatus('❌ Error: ' + data.message);
+      }
     } catch (error) {
-      setConnectionStatus('❌ Error: ' + (error as Error).message);
+      setConnectionStatus('❌ Error de conexión a Supabase: ' + (error as Error).message);
     }
     setLoading(false);
   };
@@ -61,13 +69,18 @@ export default function AdminTest() {
   return (
     <Layout>
       <div className="container py-5">
-        <h1 className="mb-4">🧪 Pruebas de Conexión a Base de Datos</h1>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h1>🧪 Pruebas de Conexión a Supabase (PostgreSQL)</h1>
+          <Link href="/admin" className="btn btn-secondary">
+            ← Volver al Panel
+          </Link>
+        </div>
 
         <div className="row">
           <div className="col-md-6">
             <div className="card mb-4">
               <div className="card-header">
-                <h5>🔗 Prueba de Conexión Upstash</h5>
+                <h5>🔗 Prueba de Conexión Supabase</h5>
               </div>
               <div className="card-body">
                 <p className="card-text">
@@ -109,7 +122,7 @@ export default function AdminTest() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-header">
-                <h5>📊 Productos en Base de Datos</h5>
+                <h5>📊 Productos en Supabase</h5>
               </div>
               <div className="card-body">
                 {products.length === 0 ? (
@@ -134,10 +147,10 @@ export default function AdminTest() {
         <div className="alert alert-info mt-4">
           <h6>🔍 Cómo verificar si funciona:</h6>
           <ol>
-            <li>Haz click en "Probar Conexión" - debería decir "Conectado correctamente"</li>
+            <li>Haz click en "Probar Conexión" - debería decir "Conectado correctamente a Supabase"</li>
             <li>Haz click en "Cargar Productos" - deberías ver productos si hay datos</li>
             <li>Haz click en "Agregar Producto de Prueba" - debería agregar un producto</li>
-            <li>Si todo funciona, la base de datos está conectada correctamente</li>
+            <li>Si todo funciona, Supabase está conectado correctamente</li>
           </ol>
         </div>
 
@@ -145,8 +158,10 @@ export default function AdminTest() {
           <strong>💡 Consejos de depuración:</strong>
           <ul className="mb-0 mt-2">
             <li>Abre la consola del navegador (F12) para ver los logs detallados</li>
-            <li>Si hay errores, revisa que las variables de entorno estén configuradas en Vercel</li>
-            <li>Los productos se guardan permanentemente en Upstash Redis</li>
+            <li>Si hay errores de conexión, verifica que las variables de entorno estén configuradas</li>
+            <li>Revisa que las tablas se hayan creado en Supabase (SQL Editor)</li>
+            <li>Los productos se guardan permanentemente en Supabase (PostgreSQL)</li>
+            <li>Supabase es gratis: 500MB storage, sin costo por requests</li>
           </ul>
         </div>
       </div>

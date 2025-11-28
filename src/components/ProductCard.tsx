@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Product } from '@/lib/products';
+import { getSiteContent } from '@/lib/siteContent';
 
 interface ProductCardProps {
   product: Product;
@@ -10,9 +11,40 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [whatsappNumber, setWhatsappNumber] = useState('571234567890'); // fallback
 
   // Si no hay imagen, usar imagen por defecto
   const imageUrl = product.image || `https://picsum.photos/400/300?random=999`;
+
+  useEffect(() => {
+    // Cargar número de WhatsApp
+    const loadWhatsAppNumber = async () => {
+      try {
+        const content = await getSiteContent();
+        if (content?.whatsapp) {
+          setWhatsappNumber(content.whatsapp.replace(/\D/g, ''));
+        }
+      } catch (error) {
+        console.error('Error loading WhatsApp number in ProductCard:', error);
+      }
+    };
+
+    loadWhatsAppNumber();
+
+    // Escuchar cambios en el contenido del sitio
+    const handleContentUpdate = (event: CustomEvent) => {
+      const content = event.detail;
+      if (content.whatsapp) {
+        setWhatsappNumber(content.whatsapp.replace(/\D/g, ''));
+      }
+    };
+
+    window.addEventListener('siteContentUpdated', handleContentUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('siteContentUpdated', handleContentUpdate as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     // Timeout más largo para imágenes base64 (10 segundos máximo)
@@ -62,9 +94,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <h5 className="card-title">{product.name}</h5>
         <p className="card-text flex-grow-1">{product.description}</p>
         <p className="fw-bold text-primary">{product.price}</p>
-        <Link href={`/tienda/${product.id}`} className="btn btn-primary mt-auto">
-          Ver Detalles
-        </Link>
+        <div className="d-flex gap-2 mt-auto">
+          <Link href={`/tienda/${product.id}`} className="btn btn-primary flex-fill">
+            Ver Detalles
+          </Link>
+          <button
+            className="btn btn-success flex-fill"
+            onClick={() => {
+              const message = `Hola, estoy interesado en el producto: ${product.name}`;
+              const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+              window.open(whatsappUrl, '_blank');
+            }}
+          >
+            Contactar
+          </button>
+        </div>
       </div>
     </div>
   );

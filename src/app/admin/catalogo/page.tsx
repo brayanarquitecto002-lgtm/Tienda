@@ -37,7 +37,15 @@ export default function AdminCatalogo() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === 'price') {
+      // Formatear precio en formato colombiano
+      const numericValue = value.replace(/\D/g, ''); // Solo números
+      const formattedValue = numericValue ? '$' + parseInt(numericValue).toLocaleString('es-CO') : '';
+      setFormData(prev => ({ ...prev, [name]: formattedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImageUpload = async (file: File) => {
@@ -211,6 +219,7 @@ export default function AdminCatalogo() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      placeholder="Ej: Plano Arquitectónico Residencial"
                       required
                     />
                   </div>
@@ -221,6 +230,7 @@ export default function AdminCatalogo() {
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
+                      placeholder="Describe brevemente el servicio arquitectónico que ofreces"
                       required
                       rows={3}
                     />
@@ -269,6 +279,7 @@ export default function AdminCatalogo() {
                       name="price"
                       value={formData.price}
                       onChange={handleInputChange}
+                      placeholder="Ej: 4000 (se mostrará como $4.000)"
                       required
                     />
                   </div>
@@ -280,6 +291,7 @@ export default function AdminCatalogo() {
                       name="details"
                       value={formData.details}
                       onChange={handleInputChange}
+                      placeholder="Información adicional sobre el servicio"
                       required
                     />
                   </div>
@@ -291,6 +303,7 @@ export default function AdminCatalogo() {
                       name="features"
                       value={formData.features}
                       onChange={handleInputChange}
+                      placeholder="Ej: Planos 2D y 3D, Cálculos estructurales, Memoria descriptiva"
                       required
                     />
                   </div>
