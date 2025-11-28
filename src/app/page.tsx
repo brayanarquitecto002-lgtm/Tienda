@@ -21,7 +21,7 @@ export default function Home() {
       mission: 'Nuestra misión es proporcionar soluciones arquitectónicas de alta calidad que mejoren la calidad de vida de nuestros clientes, integrando innovación, sostenibilidad y funcionalidad en cada proyecto.',
       vision: 'Ser líderes en el diseño arquitectónico, reconocidos por nuestra excelencia, creatividad y compromiso con el desarrollo urbano sostenible.',
       logo: 'https://via.placeholder.com/200x80/007bff/ffffff?text=LOGO',
-      heroImage: 'https://via.placeholder.com/1200x600/6c757d/ffffff?text=Imagen+Hero',
+      heroImage: 'https://picsum.photos/1200/600?random=2',
       socialLinks: {
         facebook: '',
         instagram: '',
