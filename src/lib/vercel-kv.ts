@@ -222,9 +222,15 @@ export const getProducts = async (): Promise<Product[]> => {
   try {
     console.log('🔍 Intentando cargar productos desde Upstash Redis...');
     const productsJson = await upstashGet(PRODUCTS_KEY);
-    const products = productsJson ? JSON.parse(productsJson) : [];
+    let products = productsJson ? JSON.parse(productsJson) : [];
 
     if (products && products.length > 0) {
+      // Asegurar que todos los productos tengan imagen
+      products = products.map((product: Product) => ({
+        ...product,
+        image: product.image || `https://picsum.photos/400/300?random=${product.id || '999'}`
+      }));
+
       console.log('✅ Productos cargados desde Upstash:', products.length);
       return products;
     } else {
