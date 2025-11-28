@@ -20,13 +20,23 @@ export default function Tienda() {
       setError(null);
 
       // TEMPORAL: Leer desde localStorage mientras Firebase se configura
+      console.log('🔍 Intentando cargar productos desde localStorage...');
       const saved = localStorage.getItem('products');
+      console.log('📦 Contenido de localStorage "products":', saved);
+
       if (saved) {
-        const productsData = JSON.parse(saved);
-        console.log('✅ Productos cargados desde localStorage:', productsData.length);
-        setProducts(productsData);
+        try {
+          const productsData = JSON.parse(saved);
+          console.log('✅ Productos cargados desde localStorage:', productsData.length);
+          console.log('📋 Productos:', productsData.map((p: any) => ({ id: p.id, name: p.name, image: p.image?.substring(0, 50) + '...' })));
+          setProducts(productsData);
+        } catch (parseError) {
+          console.error('❌ Error parseando productos de localStorage:', parseError);
+          const productsData = await getProducts();
+          setProducts(productsData);
+        }
       } else {
-        console.log('📝 No hay productos guardados, mostrando productos de ejemplo...');
+        console.log('📝 No hay productos guardados en localStorage, mostrando productos de ejemplo...');
         // Si no hay productos guardados, intentar desde Firebase
         const productsData = await getProducts();
         setProducts(productsData);
