@@ -105,6 +105,21 @@ export const addProduct = async (product: Omit<Product, 'id' | 'createdAt' | 'up
   }
 };
 
+// Actualizar un producto
+export const updateProduct = async (id: string, product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      ...product,
+      updatedAt: new Date(),
+    });
+    return true;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return false;
+  }
+};
+
 // Eliminar un producto
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {

@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { getProducts, addProduct, deleteProduct, uploadProductImage, Product } from '@/lib/products';
+import { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, Product } from '@/lib/products';
 
 export default function AdminCatalogo() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -76,12 +77,12 @@ export default function AdminCatalogo() {
     e.preventDefault();
 
     if (!formData.image) {
-      alert('Por favor, selecciona y espera a que se suba una imagen antes de agregar el producto.');
+      alert('Por favor, selecciona y espera a que se suba una imagen antes de guardar el producto.');
       return;
     }
 
     try {
-      const newProductData = {
+      const productData = {
         name: formData.name,
         description: formData.description,
         image: formData.image,
@@ -90,23 +91,30 @@ export default function AdminCatalogo() {
         features: formData.features.split(',').map(f => f.trim()),
       };
 
-      const productId = await addProduct(newProductData);
-      if (productId) {
+      let success = false;
+      if (editingProduct && editingProduct.id) {
+        // Editando producto existente
+        success = await updateProduct(editingProduct.id, productData);
+        if (success) {
+          alert('Producto actualizado exitosamente');
+        }
+      } else {
+        // Agregando nuevo producto
+        const productId = await addProduct(productData);
+        if (productId) {
+          success = true;
+          alert('Producto agregado exitosamente');
+        }
+      }
+
+      if (success) {
         await loadProducts(); // Recargar productos
         window.dispatchEvent(new CustomEvent('productsUpdated'));
-        setFormData({
-          name: '',
-          description: '',
-          image: '',
-          price: '',
-          details: '',
-          features: '',
-        });
-        alert('Producto agregado exitosamente');
+        handleCancelEdit(); // Limpiar formulario
       }
     } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Error al agregar el producto');
+      console.error('Error saving product:', error);
+      alert(`Error al ${editingProduct ? 'actualizar' : 'agregar'} el producto`);
     }
   };
 
@@ -126,6 +134,30 @@ export default function AdminCatalogo() {
     }
   };
 
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      image: product.image,
+      price: product.price,
+      details: product.details,
+      features: product.features.join(', '),
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: '',
+      description: '',
+      image: '',
+      price: '',
+      details: '',
+      features: '',
+    });
+  };
+
   return (
     <Layout>
       <div className="container py-5">
@@ -139,8 +171,17 @@ export default function AdminCatalogo() {
         <div className="row">
           <div className="col-lg-4">
             <div className="card mb-4">
-              <div className="card-header">
-                <h5>Agregar Nuevo Producto</h5>
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h5>{editingProduct ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h5>
+                {editingProduct && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancelar Edición
+                  </button>
+                )}
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit}>
@@ -236,7 +277,7 @@ export default function AdminCatalogo() {
                     />
                   </div>
                   <button type="submit" className="btn btn-primary w-100" disabled={uploading}>
-                    {uploading ? 'Subiendo imagen...' : 'Agregar Producto'}
+                    {uploading ? 'Subiendo imagen...' : (editingProduct ? 'Actualizar Producto' : 'Agregar Producto')}
                   </button>
                 </form>
               </div>
@@ -263,12 +304,20 @@ export default function AdminCatalogo() {
                           <h6 className="card-title">{product.name}</h6>
                           <p className="card-text small flex-grow-1">{product.description}</p>
                           <p className="fw-bold text-primary">{product.price}</p>
-                          <button
-                            className="btn btn-danger btn-sm mt-auto"
-                            onClick={() => product.id && handleDelete(product.id)}
-                          >
-                            Eliminar
-                          </button>
+                          <div className="d-flex gap-2 mt-auto">
+                            <button
+                              className="btn btn-warning btn-sm"
+                              onClick={() => handleEdit(product)}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => product.id && handleDelete(product.id)}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
