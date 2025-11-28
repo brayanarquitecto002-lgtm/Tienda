@@ -12,7 +12,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   // Si no hay imagen, usar imagen por defecto
-  const imageUrl = product.image || `https://picsum.photos/400/300?random=${product.id || 'default'}`;
+  const imageUrl = product.image || `https://picsum.photos/400/300?random=999`;
 
   useEffect(() => {
     // Timeout para evitar spinner infinito (5 segundos máximo)
