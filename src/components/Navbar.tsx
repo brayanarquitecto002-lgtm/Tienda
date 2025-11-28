@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 const Navbar = () => {
-  const [logo, setLogo] = useState('https://picsum.photos/200/80?random=1');
+  const [logo, setLogo] = useState('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=80&fit=crop');
 
   useEffect(() => {
     // Cargar logo desde localStorage
