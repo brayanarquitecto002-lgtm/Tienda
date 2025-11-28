@@ -11,6 +11,9 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
 
+  // Si no hay imagen, usar imagen por defecto
+  const imageUrl = product.image || `https://picsum.photos/400/300?random=${product.id || 'default'}`;
+
   useEffect(() => {
     // Timeout para evitar spinner infinito (5 segundos máximo)
     const timeout = setTimeout(() => {
@@ -41,7 +44,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         ) : (
           <img
-            src={product.image}
+            src={imageUrl}
             className={`card-img-top ${imageState === 'loaded' ? '' : 'd-none'}`}
             alt={product.name}
             style={{
