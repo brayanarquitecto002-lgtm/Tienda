@@ -4,6 +4,6 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_IMGBB_API_KEY": "0adddd5b1f61799d10be43e33ba3464f"
+    "NEXT_PUBLIC_IMGBB_API_KEY": "3cdeef6e840716d034ca88855d9d0a5d"
   }
 }
