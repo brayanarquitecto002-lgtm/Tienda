@@ -83,6 +83,29 @@ const compressBase64Image = (base64String: string, maxWidth: number = 400, quali
   });
 };
 
+// Subir imagen de producto (comprimir base64)
+export const uploadProductImage = async (file: File, productId: string): Promise<string | null> => {
+  console.log('🖼️ Procesando imagen de producto...');
+  console.log('📋 Parámetros:', { fileName: file.name, fileSize: file.size, productId });
+
+  try {
+    // Validar tamaño del archivo (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('La imagen es demasiado grande. Máximo 5MB.');
+    }
+
+    console.log('🗜️ Comprimiendo imagen...');
+    const compressedBase64 = await compressBase64Image(URL.createObjectURL(file), 800, 0.85);
+    console.log(`✅ Imagen comprimida: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+
+    console.log('🎉 Imagen procesada exitosamente');
+    return compressedBase64;
+  } catch (error) {
+    console.error('💥 Error procesando imagen:', error);
+    return null;
+  }
+};
+
 // Productos de ejemplo
 const getExampleProducts = (): Product[] => [
   {
